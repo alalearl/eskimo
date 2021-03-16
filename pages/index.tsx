@@ -1,65 +1,69 @@
 import Head from 'next/head'
 import styles from '../styles/Home.module.css'
+import useSWR from 'swr'
+import Loading from '../components/loading/loading';
+import fetcher from "../libs/fetcher";
+
+const checkDatabase =  () => {
+  const { data, error } =  useSWR('/api/sql/check', fetcher)
+
+  console.log(data, error)
+
+  if (!data && !error) {
+    return
+  }
+
+  if (error) {
+    console.log(error)
+    return false
+  }
+  if (data) {
+    console.log(data)
+    return true
+  }
+}
+
 
 export default function Home() {
+  let loading = true
+  let connecting = false
+  const databaseExist = checkDatabase()
+
+  if (databaseExist === undefined) {
+    loading = true
+  } else if (databaseExist === true) {
+    loading = false
+    connecting = true
+  } else if (databaseExist === false) {
+    loading = false
+    connecting = false
+  }
+
   return (
     <div className={styles.container}>
       <Head>
-        <title>Create Next App</title>
+        <title>eskimo</title>
         <link rel="icon" href="/favicon.ico" />
       </Head>
-
-      <main className={styles.main}>
-        <h1 className={styles.title}>
-          Welcome to <a href="https://nextjs.org">Next.js!</a>
-        </h1>
-
-        <p className={styles.description}>
-          Get started by editing{' '}
-          <code className={styles.code}>pages/index.js</code>
-        </p>
-
-        <div className={styles.grid}>
-          <a href="https://nextjs.org/docs" className={styles.card}>
-            <h3>Documentation &rarr;</h3>
-            <p>Find in-depth information about Next.js features and API.</p>
-          </a>
-
-          <a href="https://nextjs.org/learn" className={styles.card}>
-            <h3>Learn &rarr;</h3>
-            <p>Learn about Next.js in an interactive course with quizzes!</p>
-          </a>
-
-          <a
-            href="https://github.com/vercel/next.js/tree/master/examples"
-            className={styles.card}
-          >
-            <h3>Examples &rarr;</h3>
-            <p>Discover and deploy boilerplate example Next.js projects.</p>
-          </a>
-
-          <a
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-            className={styles.card}
-          >
-            <h3>Deploy &rarr;</h3>
-            <p>
-              Instantly deploy your Next.js site to a public URL with Vercel.
-            </p>
-          </a>
+      <main>
+        { loading ? 
+        <Loading />
+        :
+       ( databaseExist ? 
+        <div className="bg-gray-200 p-5 max-w-80 max-h-80 flex justify-center items-center rounded-2xl shadow-2xl">
+          database exists
         </div>
+        : 
+        <div className="bg-gray-200 p-10 max-w-80 max-h-80 flex justify-center items-center rounded-2xl shadow-2xl">
+          <span>
+            Error: Database does not exist, please create your database schema or check your SQL connection
+          </span>
+          
+        </div>
+        )
+        }
+        
       </main>
-
-      <footer className={styles.footer}>
-        <a
-          href="https://vercel.com?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Powered by{' '}
-          <img src="/vercel.svg" alt="Vercel Logo" className={styles.logo} />
-        </a>
-      </footer>
     </div>
   )
 }
