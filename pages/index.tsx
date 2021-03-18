@@ -4,6 +4,7 @@ import useSWR from 'swr';
 import Loading from '../components/loading/loading';
 import fetcher from '../libs/fetcher';
 import SystemAlert from '../components/system-alert/system-alert';
+import { useRouter } from 'next/router'
 
 const checkDatabase = () => {
   const { data, error } = useSWR('/api/sql/check', fetcher);
@@ -14,23 +15,28 @@ const checkDatabase = () => {
     return false;
   }
   if (data) {
-    return true;
+    return data;
   }
 };
 
 export default function Home() {
+  const router = useRouter()
   let loading = true;
   let connecting = false;
   const databaseExist = checkDatabase();
 
   if (databaseExist === undefined) {
     loading = true;
-  } else if (databaseExist === true) {
-    loading = false;
-    connecting = true;
   } else if (databaseExist === false) {
     loading = false;
     connecting = false;
+  } else if (databaseExist) {
+    console.log(databaseExist)
+    if (databaseExist.initialize) {
+      router.push('initialize')
+    } else {
+      router.push('/login')
+    }
   }
 
   return (

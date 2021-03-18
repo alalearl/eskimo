@@ -19,10 +19,9 @@ export const checkDatabase = async () => {
     );
     const queryCheckUser = await mysqlConnection.query(esUserCheck);
     if (queryCheckUser[0].count <= 0) {
-      const esUserCreateFirstUser = read(
-        path.resolve(process.env.ROOT, 'sql/root_es_user.sql')
-      );
-      await mysqlConnection.execute(esUserCreateFirstUser);
+      return { initialize: true };
+    } else {
+      return { initialize: false };
     }
   } catch (error) {
     console.error(error);
