@@ -5,9 +5,11 @@ import path from 'path';
 export const checkDatabase = async () => {
   try {
     const esUserCreateTable = read(
-      path.resolve(process.env.ROOT, 'sql/es_users.sql')
+      path.resolve(process.env.ROOT, 'sql/es.sql')
     );
-    await mysqlConnection.execute(esUserCreateTable);
+    for (const sql of esUserCreateTable) {
+      await mysqlConnection.execute(sql);
+    }
   } catch (error) {
     console.error(error);
 
@@ -17,7 +19,10 @@ export const checkDatabase = async () => {
     const esUserCheck = read(
       path.resolve(process.env.ROOT, 'sql/check_es_user.sql')
     );
-    const queryCheckUser = await mysqlConnection.query(esUserCheck);
+
+    console.log(esUserCheck);
+
+    const queryCheckUser = await mysqlConnection.query(esUserCheck[0]);
     if (queryCheckUser[0].count <= 0) {
       return { initialize: true };
     } else {
